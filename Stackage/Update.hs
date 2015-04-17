@@ -45,6 +45,8 @@ stackageUpdate StackageUpdateSettings = do
         else runIn suDir suDir "git"
             [ "clone", "https://github.com/commercialhaskell/all-cabal-files.git"
             , "-b", "display" -- avoid checking out a lot of files
+            , "--depth", "1"
+            , "--no-single-branch"
             ]
 
     cabalDir <- getAppUserDataDirectory "cabal"
