@@ -12,6 +12,14 @@ PATH. It builds on top of the
 [all-cabal-files](https://github.com/commercialhaskell/all-cabal-files)
 repository.
 
+### Advantages
+
+Versus standard `cabal update`, using `stackage-update` gives the following advantages:
+
+* Only downloads the deltas from the last time you updated your index, threby requiring significantly less bandwidth
+* Downloads over a secure HTTPS connection instead of an insecure HTTP connection
+    * Note that the `all-cabal-files` repo is also updated from Hackage over a secure HTTPS connection
+
 ### Usage
 
 Install from Hackage as usual with:
@@ -32,3 +40,7 @@ allows it to play nicely with the other Stackage command line tooling.
 Concretely, that means that if you have stackage-cli installed, stackage-update
 works as a plugin. However, you can certainly use `stackage-update` on its own
 without any other tooling or dependencies on the Stackage project.
+
+### Future enhancements
+
+* If desired, add support for GPG signature checking when cloning/pulling from the `all-caba-files` repo
