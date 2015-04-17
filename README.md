@@ -43,4 +43,4 @@ without any other tooling or dependencies on the Stackage project.
 
 ### Future enhancements
 
-* If desired, add support for GPG signature checking when cloning/pulling from the `all-caba-files` repository.
+* If desired, add support for GPG signature checking when cloning/pulling from the `all-cabal-files` repository.
