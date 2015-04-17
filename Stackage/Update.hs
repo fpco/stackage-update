@@ -42,7 +42,10 @@ stackageUpdate StackageUpdateSettings = do
     repoExists <- doesDirectoryExist acfDir
     if repoExists
         then runIn suDir acfDir "git" ["fetch"]
-        else runIn suDir suDir "git" ["clone", "https://github.com/commercialhaskell/all-cabal-files.git", "-b", "hackage"]
+        else runIn suDir suDir "git"
+            [ "clone", "https://github.com/commercialhaskell/all-cabal-files.git"
+            , "-b", "display" -- avoid checking out a lot of files
+            ]
 
     cabalDir <- getAppUserDataDirectory "cabal"
     let hackageDir = cabalDir </> "packages" </> "hackage.haskell.org"
