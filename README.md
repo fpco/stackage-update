@@ -31,6 +31,15 @@ cabal install stackage-update
 
 From then on, simply run `stackage-update` instead of `cabal update`.
 
+### Limitations
+
+This currently has no respect for customized remote-repos in your
+~/.cabal/config file. It assumes you have a remote-repo named
+`hackage.haskell.org` which should be populated from the all-cabal-files repo.
+If you have some kind of custom setup, this tool won't work for you. The vast
+majority of users tend to not modify their remote-repos, so `stackage-update`
+should work for most people most of the time.
+
 ### Why stackage?
 
 You may be wondering why this tool is called `stackage-update`, when in fact
@@ -44,6 +53,7 @@ without any other tooling or dependencies on the Stackage project.
 ### Future enhancements
 
 * If desired, add support for GPG signature checking when cloning/pulling from the `all-cabal-files` repository.
+* Detect modified remote-repos and warn the user
 
 ### Some notes
 
