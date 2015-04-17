@@ -18,7 +18,7 @@ Versus standard `cabal update`, using `stackage-update` gives the following adva
 
 * Only downloads the deltas from the last time you updated your index, threby requiring significantly less bandwidth
 * Downloads over a secure HTTPS connection instead of an insecure HTTP connection
-    * Note that the `all-cabal-files` repo is also updated from Hackage over a secure HTTPS connection
+* Note that the `all-cabal-files` repo is also updated from Hackage over a secure HTTPS connection
 
 ### Usage
 
@@ -43,7 +43,7 @@ without any other tooling or dependencies on the Stackage project.
 
 ### Future enhancements
 
-* If desired, add support for GPG signature checking when cloning/pulling from the `all-caba-files` repo
+* If desired, add support for GPG signature checking when cloning/pulling from the `all-cabal-files` repository.
 
 ### Some notes
 
