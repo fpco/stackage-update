@@ -44,3 +44,7 @@ without any other tooling or dependencies on the Stackage project.
 ### Future enhancements
 
 * If desired, add support for GPG signature checking when cloning/pulling from the `all-caba-files` repo
+
+### Some notes
+
+Data is stored as a git-repository at app-directory retrieved by [getAppUserDataDirectory](http://hackage.haskell.org/package/directory/docs/System-Directory.html#v:getAppUserDataDirectory), so for Unix it is `$HOME/.stackage-update/all-cabal-files`. This is convenient because you can `cd` there and use regular git tools to see what's new.
