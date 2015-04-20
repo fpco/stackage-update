@@ -4,16 +4,20 @@ module Stackage.Update
     , defaultStackageUpdateSettings
     ) where
 
-import           Control.Exception      (IOException, try)
-import           Control.Monad          (when)
-import           System.Directory       (createDirectoryIfMissing,
-                                         doesDirectoryExist, findExecutable,
-                                         getAppUserDataDirectory, removeFile)
-import           System.Exit            (ExitCode (ExitSuccess), exitWith)
-import           System.FilePath        ((<.>), (</>))
-import           System.Process         (createProcess, cwd, proc,
-                                         waitForProcess)
-import System.IO (hPutStrLn, stderr)
+import           Control.Exception            (IOException, try)
+import           Control.Monad                (when)
+import           Data.Version                 (Version, parseVersion)
+import           System.Directory             (createDirectoryIfMissing,
+                                               doesDirectoryExist,
+                                               findExecutable,
+                                               getAppUserDataDirectory,
+                                               removeFile)
+import           System.Exit                  (ExitCode (ExitSuccess), exitWith)
+import           System.FilePath              ((<.>), (</>))
+import           System.IO                    (hPutStrLn, stderr)
+import           System.Process               (createProcess, cwd, proc,
+                                               readProcess, waitForProcess)
+import           Text.ParserCombinators.ReadP (readP_to_S)
 
 -- | Settings for controlling the update process.
 --
@@ -28,6 +32,13 @@ data StackageUpdateSettings = StackageUpdateSettings
 defaultStackageUpdateSettings :: StackageUpdateSettings
 defaultStackageUpdateSettings = StackageUpdateSettings
 
+-- | Since internal representation of Version will change in the future.
+version19 :: Version
+version19 =
+    case map fst $ filter (null . snd) $ readP_to_S parseVersion "1.9" of
+        x:_ -> x
+        [] -> error "Couldn't parse 1.9 as a version"
+
 -- | Perform an update from the Git repository
 stackageUpdate :: StackageUpdateSettings -> IO ()
 stackageUpdate StackageUpdateSettings = do
@@ -37,17 +48,35 @@ stackageUpdate StackageUpdateSettings = do
             Just git -> return git
             Nothing -> error "Please install git and provide the executable on your PATH"
 
+    -- Check for support of the no-single-branch option
+    -- https://github.com/fpco/stackage-update/issues/5
+    fullVer <- readProcess git ["--version"] ""
+    let hasNSB =
+            case reverse $ words fullVer of
+                ver:_ ->
+                    case map fst $ filter (null . snd) $ readP_to_S parseVersion ver of
+                        ver':_ -> ver' >= version19
+                        [] -> False
+                [] -> False
+        cloneArgs =
+            "clone" : "https://github.com/commercialhaskell/all-cabal-files.git" : rest
+          where
+            rest
+                | hasNSB =
+                    [ "-b", "display" -- avoid checking out a lot of files
+                    , "--depth", "1"
+                    , "--no-single-branch"
+                    ]
+                | otherwise =
+                    [ "-b", "hackage"
+                    ]
+
     suDir <- getAppUserDataDirectory "stackage-update"
     let acfDir = suDir </> "all-cabal-files"
     repoExists <- doesDirectoryExist acfDir
     if repoExists
         then runIn suDir acfDir "git" ["fetch"]
-        else runIn suDir suDir "git"
-            [ "clone", "https://github.com/commercialhaskell/all-cabal-files.git"
-            , "-b", "display" -- avoid checking out a lot of files
-            , "--depth", "1"
-            , "--no-single-branch"
-            ]
+        else runIn suDir suDir "git" cloneArgs
 
     cabalDir <- getAppUserDataDirectory "cabal"
     let hackageDir = cabalDir </> "packages" </> "hackage.haskell.org"
