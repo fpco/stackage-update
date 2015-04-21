@@ -1,5 +1,7 @@
 ## stackage-update
 
+[![Build Status](https://travis-ci.org/fpco/stackage-update.svg?branch=master)](https://travis-ci.org/fpco/stackage-update)
+
 This package provides an executable, `stackage-update`, which provides the same
 functionality as `cabal update` (it updates your local package index). However,
 instead of downloading the entire package index as a compressed tarball over
