@@ -1,3 +1,7 @@
+## 0.1.0.3
+
+* Support for older Git versions [#5](https://github.com/fpco/stackage-update/issues/5)
+
 ## 0.1.0.1
 
 * README updates
