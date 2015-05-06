@@ -71,8 +71,9 @@ stackageUpdate StackageUpdateSettings = do
                     [ "-b", "hackage"
                     ]
 
-    suDir <- getAppUserDataDirectory "stackage-update"
-    let acfDir = suDir </> "all-cabal-files"
+    sDir <- getAppUserDataDirectory "stackage"
+    let suDir = sDir </> "update"
+        acfDir = suDir </> "all-cabal-files"
     repoExists <- doesDirectoryExist acfDir
     if repoExists
         then runIn suDir acfDir "git" ["fetch"]
