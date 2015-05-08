@@ -42,6 +42,33 @@ If you have some kind of custom setup, this tool won't work for you. The vast
 majority of users tend to not modify their remote-repos, so `stackage-update`
 should work for most people most of the time.
 
+### GPG signature verification
+
+Since version 0.1.1.0, stackage-update supports verifying the GPG signature. In
+order to do so, you pass in the `--verify` argument. You must first set up your
+GPG keychain to trust the relevant key, such as with the following commands:
+
+```
+$ gpg --recv-key --keyserver keyserver.ubuntu.com D6CF60FD
+$ gpg --edit D6CF60FD
+gpg> trust
+Your decision? 3
+gpg> quit
+```
+
+This is an example session, and not intended to be a guide to good GPG and
+cryptography practice. If you would like to verify this signing key properly
+via a web of trust, you can contact Michael Snoyman, who is already a signer
+for this key. The fingerprint is:
+
+```
+E595 AD42 14AF A6BB 1552  0B23 E40D 74D6 D6CF 60FD
+```
+
+Note: the GPG key may be updated in the future following standard key rotation
+policies. If you note that the key information listed here is out of date,
+please open an issue/send a pull request.
+
 ### Why stackage?
 
 You may be wondering why this tool is called `stackage-update`, when in fact
@@ -54,7 +81,6 @@ without any other tooling or dependencies on the Stackage project.
 
 ### Future enhancements
 
-* If desired, add support for GPG signature checking when cloning/pulling from the `all-cabal-files` repository.
 * Detect modified remote-repos and warn the user
 
 ### Some notes

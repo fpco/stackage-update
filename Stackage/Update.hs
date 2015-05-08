@@ -2,6 +2,7 @@ module Stackage.Update
     ( stackageUpdate
     , StackageUpdateSettings
     , defaultStackageUpdateSettings
+    , setVerify
     ) where
 
 import           Control.Exception            (IOException, try)
@@ -25,12 +26,24 @@ import           Text.ParserCombinators.ReadP (readP_to_S)
 --
 -- Since 0.1.0.0
 data StackageUpdateSettings = StackageUpdateSettings
+    { verify :: Bool
+    }
+
+-- | Should we verify the signature on the Git tag.
+--
+-- Default: False
+--
+-- Since 0.1.1.0
+setVerify :: Bool -> StackageUpdateSettings -> StackageUpdateSettings
+setVerify x s = s { verify = x }
 
 -- | Default settings for the update process.
 --
 -- Since 0.1.0.0
 defaultStackageUpdateSettings :: StackageUpdateSettings
 defaultStackageUpdateSettings = StackageUpdateSettings
+    { verify = False
+    }
 
 -- | Since internal representation of Version will change in the future.
 version19 :: Version
@@ -41,7 +54,7 @@ version19 =
 
 -- | Perform an update from the Git repository
 stackageUpdate :: StackageUpdateSettings -> IO ()
-stackageUpdate StackageUpdateSettings = do
+stackageUpdate set = do
     mgit <- findExecutable "git"
     git <-
         case mgit of
@@ -76,8 +89,8 @@ stackageUpdate StackageUpdateSettings = do
         acfDir = suDir </> "all-cabal-files"
     repoExists <- doesDirectoryExist acfDir
     if repoExists
-        then runIn suDir acfDir "git" ["fetch"]
-        else runIn suDir suDir "git" cloneArgs
+        then runIn suDir acfDir "git" ["fetch", "--tags"] Nothing
+        else runIn suDir suDir "git" cloneArgs Nothing
 
     cabalDir <- getAppUserDataDirectory "cabal"
     let hackageDir = cabalDir </> "packages" </> "hackage.haskell.org"
@@ -87,7 +100,14 @@ stackageUpdate StackageUpdateSettings = do
         gzFile = tarFile <.> "gz"
 
     _ <- tryIO $ removeFile tarFile
-    runIn suDir acfDir "git" ["archive", "--format=tar", "-o", tarFile, "origin/hackage"]
+    when (verify set) $ do
+        runIn suDir acfDir "git" ["tag", "-v", "current-hackage"] $ Just $ unlines
+            [ "Signature verification failed. Please ensure you've set up your"
+            , "GPG keychain to accept the D6CF60FD signing key."
+            , "For more information, see:"
+            , "https://github.com/fpco/stackage-update#readme"
+            ]
+    runIn suDir acfDir "git" ["archive", "--format=tar", "-o", tarFile, "current-hackage"] Nothing
 
 tryIO :: IO a -> IO (Either IOException a)
 tryIO = try
@@ -96,8 +116,9 @@ runIn :: FilePath -- ^ su directory
       -> FilePath -- ^ directory
       -> FilePath -- ^ command
       -> [String] -- ^ command line arguments
+      -> Maybe String -- ^ error message
       -> IO ()
-runIn suDir dir cmd args = do
+runIn suDir dir cmd args errMsg = do
     createDirectoryIfMissing True dir
     (Nothing, Nothing, Nothing, ph) <- createProcess (proc cmd args)
         { cwd = Just dir
@@ -112,9 +133,11 @@ runIn suDir dir cmd args = do
             , " in "
             , dir
             ]
-        hPutStrLn stderr $ concat
-            [ "If the problem persists, please delete the following directory "
-            , "and try again"
-            ]
-        hPutStrLn stderr suDir
+        hPutStrLn stderr $ maybe defErrMsg id errMsg
         exitWith ec
+
+defErrMsg :: String
+defErrMsg = concat
+    [ "If the problem persists, please delete the following directory "
+    , "and try again"
+    ]

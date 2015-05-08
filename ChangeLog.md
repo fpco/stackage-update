@@ -1,3 +1,7 @@
+## 0.1.1.0
+
+* Optional signature verification
+
 ## 0.1.0.4
 
 * Move to ~/.stackage/update [#6](https://github.com/fpco/stackage-update/issues/6)
