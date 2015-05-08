@@ -1,6 +1,8 @@
 import Stackage.Update
 import System.Environment (getArgs)
 import Data.List ((++), concat, intersperse)
+import Paths_stackage_update (version)
+import Data.Version (showVersion)
 
 main :: IO ()
 main = do
@@ -14,6 +16,7 @@ main = do
             , "    --hashes : Download from the all-cabal-hashes repo"
             ]
         ["--summary"] -> putStrLn "Update your package index incrementally (requires git)"
+        ["--version"] -> putStrLn $ "stackage-update version " ++ showVersion version
         _ -> stackageUpdate $ foldr addArg defaultStackageUpdateSettings args
 
 addArg :: String -> StackageUpdateSettings -> StackageUpdateSettings
