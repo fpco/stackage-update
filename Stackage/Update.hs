@@ -3,6 +3,10 @@ module Stackage.Update
     , StackageUpdateSettings
     , defaultStackageUpdateSettings
     , setVerify
+    , setRemote
+    , setDirectoryName
+    , allCabalFiles
+    , allCabalHashes
     ) where
 
 import           Control.Exception            (IOException, try)
@@ -27,6 +31,8 @@ import           Text.ParserCombinators.ReadP (readP_to_S)
 -- Since 0.1.0.0
 data StackageUpdateSettings = StackageUpdateSettings
     { verify :: Bool
+    , remote :: String
+    , name :: FilePath
     }
 
 -- | Should we verify the signature on the Git tag.
@@ -37,13 +43,43 @@ data StackageUpdateSettings = StackageUpdateSettings
 setVerify :: Bool -> StackageUpdateSettings -> StackageUpdateSettings
 setVerify x s = s { verify = x }
 
+-- | Remote repository to use
+--
+-- Default: 'allCabalFiles'
+--
+-- Since 0.1.1.0
+setRemote :: String -> StackageUpdateSettings -> StackageUpdateSettings
+setRemote x s = s { remote = x }
+
+-- | Local directory name to clone into
+--
+-- Default: \"all-cabal-files\"
+--
+-- Since 0.1.1.0
+setDirectoryName :: FilePath -> StackageUpdateSettings -> StackageUpdateSettings
+setDirectoryName x s = s { name = x }
+
 -- | Default settings for the update process.
 --
 -- Since 0.1.0.0
 defaultStackageUpdateSettings :: StackageUpdateSettings
 defaultStackageUpdateSettings = StackageUpdateSettings
     { verify = False
+    , remote = allCabalFiles
+    , name = "all-cabal-files"
     }
+
+-- | URL for the all-cabal-files repo
+--
+-- Since 0.1.1.0
+allCabalFiles :: String
+allCabalFiles = "https://github.com/commercialhaskell/all-cabal-files.git"
+
+-- | URL for the all-cabal-hashes repo
+--
+-- Since 0.1.1.0
+allCabalHashes :: String
+allCabalHashes = "https://github.com/commercialhaskell/all-cabal-hashes.git"
 
 -- | Since internal representation of Version will change in the future.
 version19 :: Version
@@ -72,7 +108,7 @@ stackageUpdate set = do
                         [] -> False
                 [] -> False
         cloneArgs =
-            "clone" : "https://github.com/commercialhaskell/all-cabal-files.git" : rest
+            "clone" : remote set : name set : rest
           where
             rest
                 | hasNSB =
@@ -86,7 +122,7 @@ stackageUpdate set = do
 
     sDir <- getAppUserDataDirectory "stackage"
     let suDir = sDir </> "update"
-        acfDir = suDir </> "all-cabal-files"
+        acfDir = suDir </> name set
     repoExists <- doesDirectoryExist acfDir
     if repoExists
         then runIn suDir acfDir "git" ["fetch", "--tags"] Nothing

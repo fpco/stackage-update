@@ -1,6 +1,7 @@
 ## 0.1.1.0
 
-* Optional signature verification
+* Optional signature verification (--verify)
+* Optional download from all-cabal-hashes (--hashes)
 
 ## 0.1.0.4
 

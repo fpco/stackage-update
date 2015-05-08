@@ -69,6 +69,16 @@ Note: the GPG key may be updated in the future following standard key rotation
 policies. If you note that the key information listed here is out of date,
 please open an issue/send a pull request.
 
+### Hash downloads
+
+When run with the `--hashes` command line argument, this tool instead downloads
+from the
+[all-cabal-hashes](https://github.com/commercialhaskell/all-cabal-hashes)
+repository, which contains additional information for verifying the accuracy of
+a tarball. While `stackage-update` does nothing with this extra information,
+other tools (like [stackage-install](https://github.com/fpco/stackage-install))
+may do so.
+
 ### Why stackage?
 
 You may be wondering why this tool is called `stackage-update`, when in fact
