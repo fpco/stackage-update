@@ -125,7 +125,11 @@ stackageUpdate set = do
         acfDir = suDir </> name set
     repoExists <- doesDirectoryExist acfDir
     if repoExists
-        then runIn suDir acfDir "git" ["fetch", "--tags"] Nothing
+        then runIn suDir acfDir "git"
+                [ "fetch"
+                , "--tags"
+                , "--depth=1"
+                ] Nothing
         else runIn suDir suDir "git" cloneArgs Nothing
 
     cabalDir <- getAppUserDataDirectory "cabal"

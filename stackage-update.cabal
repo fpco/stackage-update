@@ -1,5 +1,5 @@
 name:                stackage-update
-version:             0.1.1.1
+version:             0.1.1.2
 synopsis:            Update your package index incrementally (requires git)
 description:         Please see <https://www.stackage.org/package/stackage-update> for description
 homepage:            https://github.com/fpco/stackage-update

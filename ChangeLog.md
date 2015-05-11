@@ -1,3 +1,7 @@
+## 0.1.1.2
+
+* Pass `--depth=1` to `git fetch`
+
 ## 0.1.1.1
 
 * Support --version
