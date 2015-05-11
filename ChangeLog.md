@@ -1,3 +1,7 @@
+## 0.1.1.3
+
+* Get rid of no-single-branch code
+
 ## 0.1.1.2
 
 * Pass `--depth=1` to `git fetch`
