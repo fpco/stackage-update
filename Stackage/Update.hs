@@ -10,8 +10,7 @@ module Stackage.Update
     ) where
 
 import           Control.Exception            (IOException, try)
-import           Control.Monad                (when)
-import           Data.Version                 (Version, parseVersion)
+import           Control.Monad                (when, unless)
 import           System.Directory             (createDirectoryIfMissing,
                                                doesDirectoryExist,
                                                findExecutable,
@@ -81,13 +80,6 @@ allCabalFiles = "https://github.com/commercialhaskell/all-cabal-files.git"
 allCabalHashes :: String
 allCabalHashes = "https://github.com/commercialhaskell/all-cabal-hashes.git"
 
--- | Since internal representation of Version will change in the future.
-version19 :: Version
-version19 =
-    case map fst $ filter (null . snd) $ readP_to_S parseVersion "1.9" of
-        x:_ -> x
-        [] -> error "Couldn't parse 1.9 as a version"
-
 -- | Perform an update from the Git repository
 stackageUpdate :: StackageUpdateSettings -> IO ()
 stackageUpdate set = do
@@ -97,40 +89,26 @@ stackageUpdate set = do
             Just git -> return git
             Nothing -> error "Please install git and provide the executable on your PATH"
 
-    -- Check for support of the no-single-branch option
-    -- https://github.com/fpco/stackage-update/issues/5
-    fullVer <- readProcess git ["--version"] ""
-    let hasNSB =
-            case reverse $ words fullVer of
-                ver:_ ->
-                    case map fst $ filter (null . snd) $ readP_to_S parseVersion ver of
-                        ver':_ -> ver' >= version19
-                        [] -> False
-                [] -> False
-        cloneArgs =
-            "clone" : remote set : name set : rest
-          where
-            rest
-                | hasNSB =
-                    [ "-b", "display" -- avoid checking out a lot of files
-                    , "--depth", "1"
-                    , "--no-single-branch"
-                    ]
-                | otherwise =
-                    [ "-b", "hackage"
-                    ]
+    let cloneArgs =
+            [ "clone", remote set, name set
+            , "--depth", "1"
+            , "-b", "display"
+            ]
 
     sDir <- getAppUserDataDirectory "stackage"
     let suDir = sDir </> "update"
         acfDir = suDir </> name set
     repoExists <- doesDirectoryExist acfDir
-    if repoExists
-        then runIn suDir acfDir "git"
-                [ "fetch"
-                , "--tags"
-                , "--depth=1"
-                ] Nothing
-        else runIn suDir suDir "git" cloneArgs Nothing
+
+    unless repoExists $ do
+        putStrLn "Cloning repository for first time"
+        runIn suDir suDir "git" cloneArgs Nothing
+
+    runIn suDir acfDir "git"
+        [ "fetch"
+        , "--tags"
+        , "--depth=1"
+        ] Nothing
 
     cabalDir <- getAppUserDataDirectory "cabal"
     let hackageDir = cabalDir </> "packages" </> "hackage.haskell.org"
