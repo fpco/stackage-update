@@ -9,11 +9,11 @@ main = do
     args <- getArgs
     case args of
         ["--help"] -> putStrLn $ unlines
-            [ "Usage: stackage-update [--verify] [--hashes]"
+            [ "Usage: stackage-update [--[no-]verify] [--[no-]hashes]"
             , "Run this command with no arguments to update your package index."
             , ""
-            , "    --verify : Verify GPG signature on the repo"
-            , "    --hashes : Download from the all-cabal-hashes repo"
+            , "    --[no-]verify : Verify GPG signature on the repo"
+            , "    --[no-]hashes : Download from the all-cabal-hashes repo"
             ]
         ["--summary"] -> putStrLn "Update your package index incrementally (requires git)"
         ["--version"] -> putStrLn $ "stackage-update version " ++ showVersion version
@@ -21,7 +21,9 @@ main = do
 
 addArg :: String -> StackageUpdateSettings -> StackageUpdateSettings
 addArg "--verify" = setVerify True
+addArg "--no-verify" = setVerify False
 addArg "--hashes" = setRemote allCabalHashes . setDirectoryName "all-cabal-hashes"
+addArg "--no-hashes" = setRemote allCabalFiles . setDirectoryName "all-cabal-files"
 addArg s = error $ concat
     [ "Did not understand argument "
     , show s

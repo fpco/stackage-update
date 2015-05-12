@@ -1,3 +1,7 @@
+## 0.1.2
+
+* Allow `--no-verify` and `--no-hashes`
+
 ## 0.1.1.3
 
 * Get rid of no-single-branch code
